@@ -12,6 +12,7 @@ import retrofit2.Call
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -35,10 +36,10 @@ interface ApiService {
     ): Call<LoginResponse>
 
     @GET("stories")
-     fun getStories(
-        @Query("page") page: Int = 1,
-        @Query("size") size: Int = 20
-     ): List<ListStoryItem>
+     suspend fun getStories(
+        @Query("page") page: Int,
+        @Query("size") size: Int
+     ): StoryResponse
 
      @GET("stories/{id}")
      fun getDetail(
@@ -49,11 +50,13 @@ interface ApiService {
      @POST("stories")
      suspend fun uploadStory(
          @Part file: MultipartBody.Part,
-         @Part("description") description: RequestBody
+         @Part("description") description: RequestBody,
+         @Part("lat") lat: Float?,
+         @Part("lon") lon: Float?
      ): UploadResponse
 
      @GET("stories")
-     fun getStoriesWithLocation(
+     suspend fun getStoriesWithLocation(
          @Query("location") location: Int = 1,
-     ): Call<StoryResponse>
+     ): StoryResponse
 }

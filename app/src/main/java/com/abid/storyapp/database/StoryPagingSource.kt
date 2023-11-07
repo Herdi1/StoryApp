@@ -1,15 +1,11 @@
 package com.abid.storyapp.database
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.abid.storyapp.data.response.ListStoryItem
-import com.abid.storyapp.data.response.StoryResponse
-import com.abid.storyapp.data.retrofit.ApiConfig
 import com.abid.storyapp.data.retrofit.ApiService
 
-class StoryPagingSource(private val token: String): PagingSource<Int, ListStoryItem>() {
+class StoryPagingSource(private val apiService: ApiService): PagingSource<Int, ListStoryItem>() {
     override fun getRefreshKey(state: PagingState<Int, ListStoryItem>): Int? {
         return state.anchorPosition?.let{ anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
@@ -20,12 +16,13 @@ class StoryPagingSource(private val token: String): PagingSource<Int, ListStoryI
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ListStoryItem> {
         return try {
             val position = params.key ?: INITIAL_PAGE_INDEX
-            val responseData = ApiConfig.getApiService(token).getStories(position, params.loadSize)
+
+            val responseData = apiService.getStoriesWithLocation()
 
             LoadResult.Page(
-                data = responseData as List<ListStoryItem>,
+                data = responseData.listStory,
                 prevKey = if(position == INITIAL_PAGE_INDEX) null else position - 1,
-                nextKey = if(responseData.isNullOrEmpty()) null else position + 1
+                nextKey = if(responseData.listStory.isNullOrEmpty()) null else position + 1
             )
         }catch (exception: Exception){
             return LoadResult.Error(exception)

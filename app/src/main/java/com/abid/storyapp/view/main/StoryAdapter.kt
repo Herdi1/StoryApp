@@ -15,7 +15,7 @@ import com.abid.storyapp.databinding.ItemStoryCardBinding
 import com.abid.storyapp.view.detail.DetailActivity
 import com.bumptech.glide.Glide
 
-class StoryAdapter(private val itemClicked: (ListStoryItem) -> Unit): ListAdapter<ListStoryItem, StoryAdapter.MyViewHolder>(
+class StoryAdapter(private val itemClicked: (ListStoryItem) -> Unit): PagingDataAdapter<ListStoryItem, StoryAdapter.MyViewHolder>(
     DIFF_CALLBACK
 ) {
 

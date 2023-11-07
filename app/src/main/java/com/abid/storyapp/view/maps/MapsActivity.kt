@@ -4,7 +4,6 @@ import android.content.res.Resources
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
 import com.abid.storyapp.R
 import com.abid.storyapp.data.response.ListStoryItem
@@ -15,8 +14,10 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.abid.storyapp.databinding.ActivityMapsBinding
 import com.abid.storyapp.view.ViewModelFactory
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.runBlocking
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -33,21 +34,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
@@ -56,15 +47,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.uiSettings.isCompassEnabled = true
         mMap.uiSettings.isMapToolbarEnabled = true
 
-        val stories = mapViewModel.getStoryLocation()
-        if(stories) Toast.makeText(this@MapsActivity, "Cannot retrieve story data", Toast.LENGTH_SHORT).show()
+        getLocation()
+
         mapViewModel.listLocation.observe(this){ data ->
             setLocation(data)
         }
 
-
         setMapStyle()
     }
+
+    private fun getLocation() = runBlocking {
+        mapViewModel.getAllLocation()
+    }
+
+    private val boundsBuilder = LatLngBounds.Builder()
 
     private fun setLocation(story: List<ListStoryItem?>?){
         val data = listOf(story)
@@ -75,11 +71,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     MarkerOptions()
                         .position(it)
                         .title(data.name)
-                        .snippet(data.description)
-                }?.let {
-                    mMap.addMarker(
-                        it
-                    )
+                        .snippet(data.description) }
+                    ?.let { mMap.addMarker(it) }
+                if (latLng != null) {
+                    boundsBuilder.include(latLng)
                 }
             }
         }

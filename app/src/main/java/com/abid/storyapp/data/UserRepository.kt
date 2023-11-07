@@ -1,6 +1,10 @@
 package com.abid.storyapp.data
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -9,13 +13,20 @@ import com.abid.storyapp.data.pref.UserModel
 import com.abid.storyapp.data.pref.UserPreference
 import com.abid.storyapp.data.response.ListStoryItem
 import com.abid.storyapp.data.response.StoryResponse
+import com.abid.storyapp.data.retrofit.ApiConfig
 import com.abid.storyapp.data.retrofit.ApiService
 import com.abid.storyapp.database.StoryDatabase
 import com.abid.storyapp.database.StoryPagingSource
+import com.abid.storyapp.database.StoryRemoteMediator
 import kotlinx.coroutines.flow.Flow
 import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class UserRepository private constructor(private val apiService: ApiService, private val userPreference: UserPreference, private val storyDatabase: StoryDatabase){
+class UserRepository private constructor(
+    private val apiService: ApiService,
+    private val userPreference: UserPreference,
+    private val storyDatabase: StoryDatabase){
 
     suspend fun saveSession(user: UserModel){
         userPreference.saveSession(user)
@@ -29,23 +40,32 @@ class UserRepository private constructor(private val apiService: ApiService, pri
         userPreference.logOut()
     }
 
-    fun getStoryLocation(): Call<StoryResponse> {
-        return apiService.getStoriesWithLocation()
-    }
-
-    fun getStories(token: String): LiveData<PagingData<ListStoryItem>> {
+    fun getStoryLocation(token: String): LiveData<PagingData<ListStoryItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 5
             ),
             pagingSourceFactory = {
-                StoryPagingSource(token)
+                StoryPagingSource(ApiConfig.getApiService(token))
             }
         ).liveData
     }
 
-    suspend fun insertStory(stories: List<ListStoryItem>){
-        storyDatabase.storyDao().insertStory(stories)
+    fun getStoriesPaging(token: String): LiveData<PagingData<ListStoryItem>> {
+        @OptIn(ExperimentalPagingApi::class)
+        return Pager(
+            config = PagingConfig(
+                pageSize = 5
+            ),
+            remoteMediator = StoryRemoteMediator(storyDatabase, ApiConfig.getApiService(token)),
+            pagingSourceFactory = {
+                storyDatabase.storyDao().getAllStory()
+            }
+        ).liveData
+    }
+
+    suspend fun getLocation(): List<ListStoryItem>{
+        return apiService.getStoriesWithLocation().listStory
     }
 
     companion object{
@@ -61,8 +81,4 @@ class UserRepository private constructor(private val apiService: ApiService, pri
                 instance ?:UserRepository(apiService, userPreference, storyDatabase)
             }.also { instance = it }
     }
-
-//     fun getQuote(): List<ListStoryItem> {
-//        return apiService.getStories(1, 5)
-//    }
 }

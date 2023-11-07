@@ -1,5 +1,6 @@
 package com.abid.storyapp.view.main
 
+import android.content.ContentValues.TAG
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,14 +8,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.abid.storyapp.R
-import com.abid.storyapp.data.di.Injection
-import com.abid.storyapp.data.response.ListStoryItem
-import com.abid.storyapp.data.response.Story
 import com.abid.storyapp.databinding.ActivityMainBinding
 import com.abid.storyapp.view.ViewModelFactory
 import com.abid.storyapp.view.detail.DetailActivity
@@ -47,8 +44,8 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }else{
                 token = user.token
-                val stories = viewModel.getStory(token)
-                if(stories == null) Toast.makeText(this@MainActivity, "Cannot retrieve story data", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "Token : $token")
+                setStories(user.token)
             }
         }
 
@@ -56,10 +53,6 @@ class MainActivity : AppCompatActivity() {
         binding.rvStories.layoutManager = layoutManager
         val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
         binding.rvStories.addItemDecoration(itemDecoration)
-
-        viewModel.listItem.observe(this){ storiesList ->
-            setStories(storiesList)
-        }
 
 
         binding.fabAddStory.setOnClickListener {
@@ -69,9 +62,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
-    private fun setStories(story: List<ListStoryItem>){
+    private fun setStories(token: String){
+        showLoading(true)
         binding.rvStories.layoutManager = LinearLayoutManager(this)
 
         val adapter = StoryAdapter{ storyClicked ->
@@ -81,12 +73,17 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.rvStories.adapter = adapter
-        adapter.submitList(story)
-//        viewModel.insertStory(story).observe(this, {
-//            adapter.submitData(lifecycle, it)
-//        })
-        //viewModel.insertStory(story)
+        binding.rvStories.adapter = adapter.withLoadStateFooter(
+            footer = LoadingStateAdapter{
+                adapter.retry()
+            }
+        )
+
+        viewModel.stories(token).observe(this, {
+            adapter.submitData(lifecycle, it)
+            showLoading(false)
+        })
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

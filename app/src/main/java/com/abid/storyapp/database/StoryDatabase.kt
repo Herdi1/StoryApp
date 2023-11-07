@@ -7,9 +7,14 @@ import androidx.room.RoomDatabase
 import com.abid.storyapp.data.response.ListStoryItem
 import com.abid.storyapp.data.response.StoryResponse
 
-@Database(entities = [ListStoryItem::class], version = 1, exportSchema = false)
+@Database(
+    entities = [ListStoryItem::class, RemoteKey::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class StoryDatabase : RoomDatabase(){
     abstract fun storyDao(): StoryDao
+    abstract fun remoteKeysDao(): RemoteKeysDao
     companion object{
         @Volatile
         private var INSTANCE: StoryDatabase? = null
