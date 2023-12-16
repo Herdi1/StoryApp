@@ -1,9 +1,6 @@
 package com.abid.storyapp.data
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -12,16 +9,12 @@ import androidx.paging.liveData
 import com.abid.storyapp.data.pref.UserModel
 import com.abid.storyapp.data.pref.UserPreference
 import com.abid.storyapp.data.response.ListStoryItem
-import com.abid.storyapp.data.response.StoryResponse
 import com.abid.storyapp.data.retrofit.ApiConfig
 import com.abid.storyapp.data.retrofit.ApiService
 import com.abid.storyapp.database.StoryDatabase
 import com.abid.storyapp.database.StoryPagingSource
 import com.abid.storyapp.database.StoryRemoteMediator
 import kotlinx.coroutines.flow.Flow
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class UserRepository private constructor(
     private val apiService: ApiService,
@@ -38,17 +31,6 @@ class UserRepository private constructor(
 
     suspend fun logout(){
         userPreference.logOut()
-    }
-
-    fun getStoryLocation(token: String): LiveData<PagingData<ListStoryItem>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 5
-            ),
-            pagingSourceFactory = {
-                StoryPagingSource(ApiConfig.getApiService(token))
-            }
-        ).liveData
     }
 
     fun getStoriesPaging(token: String): LiveData<PagingData<ListStoryItem>> {

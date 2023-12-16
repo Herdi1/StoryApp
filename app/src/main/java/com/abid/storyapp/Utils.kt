@@ -6,10 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.MediaStore
-import androidx.core.content.FileProvider
-import com.google.gson.internal.GsonBuildConfig
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -36,19 +33,8 @@ fun getImageUri(context: Context): Uri? {
         )
     }
     return uri
-        //?: getImageUriForPreQ(context)
 }
 
-//fun getImageUriForPreQ(context: Context): Uri{
-//    val filesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-//    val imageFile = File(filesDir, "/MyCamera/$timeStamp.jpg")
-//    if (imageFile.parentFile?.exists() == false) imageFile.parentFile?.mkdir()
-//    return FileProvider.getUriForFile(
-//        context,
-//        "${BuildConfig.APPLICATION_ID}.fileprofider",
-//        imageFile
-//    )
-//}
 fun createCustomTempFile(context: Context): File{
     val fileDir = context.externalCacheDir
     return File.createTempFile(timeStamp, ".jog", fileDir)

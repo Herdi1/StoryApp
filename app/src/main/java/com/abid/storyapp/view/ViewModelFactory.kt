@@ -3,7 +3,6 @@ package com.abid.storyapp.view
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.abid.storyapp.data.UserRepository
 import com.abid.storyapp.data.di.Injection
 import com.abid.storyapp.view.detail.DetailViewModel
 import com.abid.storyapp.view.login.LoginViewModel
@@ -35,18 +34,4 @@ class ViewModelFactory(private val context: Context): ViewModelProvider.NewInsta
         }
     }
 
-//    companion object{
-//        @Volatile
-//        private var INSTANCE: ViewModelFactory? = null
-//
-//        @JvmStatic
-//        fun getInstance(context: Context): ViewModelFactory{
-//            if(INSTANCE == null){
-//                synchronized(ViewModelFactory::class.java){
-//                    INSTANCE = ViewModelFactory(Injection.provideRepository(context))
-//                }
-//            }
-//            return INSTANCE as ViewModelFactory
-//        }
-//    }
 }

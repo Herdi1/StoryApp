@@ -5,7 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.abid.storyapp.data.response.ListStoryItem
-import com.abid.storyapp.data.response.StoryResponse
 
 @Database(
     entities = [ListStoryItem::class, RemoteKey::class],
